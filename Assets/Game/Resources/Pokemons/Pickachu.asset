@@ -10,22 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 880b911210a90074699c04909312d1cf, type: 3}
-  m_Name: Butterfree
+  m_Name: Pickachu
   m_EditorClassIdentifier: 
-  name: Butterfree
+  name: Pickachu
   description: 
-  frontSprite: {fileID: 21300000, guid: dbcd9c03ff4df3e459be77f16307577e, type: 3}
-  backSprite: {fileID: 21300000, guid: fa49e0316aa8f7f488fefdeadceb7133, type: 3}
-  type1: 12
-  type2: 10
-  maxHp: 60
-  attack: 45
-  defense: 50
-  spAttack: 90
-  spDefense: 80
-  speed: 70
+  frontSprite: {fileID: 21300000, guid: ac6771db99339ec43bdfa8c13c496832, type: 3}
+  backSprite: {fileID: 21300000, guid: 64f7e6f4c06be2943ae76a804fdc7669, type: 3}
+  type1: 4
+  type2: 0
+  maxHp: 35
+  attack: 55
+  defense: 40
+  spAttack: 50
+  spDefense: 50
+  speed: 90
   learnableMoves:
   - moveBase: {fileID: 11400000, guid: e6e991c779b378e42bcfd3fa98d477c1, type: 2}
     level: 1
-  - moveBase: {fileID: 11400000, guid: 14769b0dae4c145438ddd7c7dfe0f328, type: 2}
+  - moveBase: {fileID: 11400000, guid: f4341ff3fb286bd4ba84be0f906b263e, type: 2}
+    level: 1
+  - moveBase: {fileID: 11400000, guid: fab48ed402e0a8c4e9471b62bef444a1, type: 2}
     level: 10

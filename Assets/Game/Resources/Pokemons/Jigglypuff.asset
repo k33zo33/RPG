@@ -9,17 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdf05063a99e2ee43853ea499e3c3de5, type: 3}
-  m_Name: PoisonPowder
+  m_Script: {fileID: 11500000, guid: 880b911210a90074699c04909312d1cf, type: 3}
+  m_Name: Jigglypuff
   m_EditorClassIdentifier: 
-  name: Poison Powder
+  name: 
   description: 
-  type: 8
-  power: 0
-  accuracy: 100
-  pp: 20
-  category: 2
-  effects:
-    boosts: []
-    status: 1
-  target: 0
+  frontSprite: {fileID: 0}
+  backSprite: {fileID: 0}
+  type1: 0
+  type2: 0
+  maxHp: 0
+  attack: 0
+  defense: 0
+  spAttack: 0
+  spDefense: 0
+  speed: 0
+  learnableMoves: []
