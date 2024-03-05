@@ -12,16 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 880b911210a90074699c04909312d1cf, type: 3}
   m_Name: Jigglypuff
   m_EditorClassIdentifier: 
-  name: 
+  name: Jigglypuff
   description: 
-  frontSprite: {fileID: 0}
-  backSprite: {fileID: 0}
-  type1: 0
+  frontSprite: {fileID: 21300000, guid: 5c593820c10da4b45b6fec0bed8e6e5b, type: 3}
+  backSprite: {fileID: 21300000, guid: 5251ecab587a9ec4e8ec6f73e1478c4d, type: 3}
+  type1: 1
   type2: 0
-  maxHp: 0
-  attack: 0
-  defense: 0
-  spAttack: 0
-  spDefense: 0
-  speed: 0
-  learnableMoves: []
+  maxHp: 115
+  attack: 45
+  defense: 20
+  spAttack: 45
+  spDefense: 20
+  speed: 20
+  learnableMoves:
+  - moveBase: {fileID: 11400000, guid: e6e991c779b378e42bcfd3fa98d477c1, type: 2}
+    level: 1
+  - moveBase: {fileID: 11400000, guid: f4341ff3fb286bd4ba84be0f906b263e, type: 2}
+    level: 1
+  - moveBase: {fileID: 11400000, guid: 19cc63c8258279f42afec465cbc089dd, type: 2}
+    level: 10
