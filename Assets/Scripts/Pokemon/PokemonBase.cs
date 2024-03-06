@@ -82,7 +82,11 @@ public enum Stat
     Defense,
     SpAttack,
     SpDefense,
-    Speed
+    Speed,
+
+    //not actual stats, just used to boost moveAccuracy
+    Accuracy,
+    Evasion
 }
 
 public class TypeChart
@@ -124,9 +128,7 @@ public class TypeChart
 
        new float[] { 1f, 0.5f, 0.5f, 0.5f, 1f, 2f,  1f,  1f,  1f,  1f,  1f,  1f,  2f,  1f,  1f,  1f,  0.5f }, //steel
 
-       
-
-
+      
     };
 
     public static float GetEffectivness(PokemonType attackType, PokemonType defenseType)
