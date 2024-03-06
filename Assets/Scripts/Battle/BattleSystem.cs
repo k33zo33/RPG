@@ -5,7 +5,8 @@ using Unity.Mathematics;
 using UnityEngine;
 
 
-public enum BattleState { Start, ActionSelection, MoveSelection, PerformMove, Busy, PartyScreen, BattleOver}
+public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, BattleOver}
+public enum BattleAction { Move, SwitchPokemon, UseItem, Run }
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] BattleUnit playerUnit;
@@ -18,6 +19,7 @@ public class BattleSystem : MonoBehaviour
     public event Action<bool> OnBattleOver;
 
     BattleState state;
+    BattleState? previousState;
     int currentAction;
     int currentMove;
     int currentMember;
@@ -46,16 +48,10 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog($"A wild {enemyUnit.Pokemon.Base.Name} appeared.");
 
 
-        ChooseFirstTurn();
+        ActionSelection();
     }
 
-    private void ChooseFirstTurn()
-    {
-        if (playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed )
-            ActionSelection();
-        else
-            StartCoroutine(EnemyMove());
-    }
+   
 
     private void ActionSelection()
     {
@@ -125,10 +121,19 @@ public class BattleSystem : MonoBehaviour
                 partyScreen.SetMessageText("You can't switch with the same pokemon.");
                 return;
             }
+
             partyScreen.gameObject.SetActive(false);
 
-            state = BattleState.Busy;
-            StartCoroutine(SwitchPokemon(selectedMember));
+            if(previousState == BattleState.ActionSelection)
+            {
+                previousState = null;
+                StartCoroutine(RunTurns(BattleAction.SwitchPokemon));
+            }
+            else
+            {
+                state = BattleState.Busy;
+                StartCoroutine(SwitchPokemon(selectedMember)); 
+            }
 
         }
         else if (Input.GetKeyDown(KeyCode.X))
@@ -140,11 +145,8 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator SwitchPokemon(Pokemon newPokemon)
     {
-        bool currentPokemonFainted = true;
-
         if (playerUnit.Pokemon.HP > 0)
         {
-            currentPokemonFainted = false;
             yield return dialogBox.TypeDialog($"Come back {playerUnit.Pokemon.Base.Name}");
             playerUnit.PlayFaintAnimation();
             yield return new WaitForSeconds(2f);
@@ -157,10 +159,7 @@ public class BattleSystem : MonoBehaviour
 
         yield return dialogBox.TypeDialog($"Go {newPokemon.Base.Name}!");
 
-        if (currentPokemonFainted)
-            ChooseFirstTurn();
-        else
-        StartCoroutine(EnemyMove());
+        state = BattleState.RunningTurn;
     }
 
     private void HandleMoveSelection()
@@ -178,7 +177,7 @@ public class BattleSystem : MonoBehaviour
         {
             dialogBox.EnableMoveSelector(false);
             dialogBox.EnableDialogText(true);
-            StartCoroutine(PlayerMove());
+            StartCoroutine(RunTurns(BattleAction.Move));
         }
         else if (Input.GetKeyDown(KeyCode.X))
         {
@@ -188,30 +187,57 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayerMove()
+    IEnumerator RunTurns(BattleAction playerAction)
     {
-        state = BattleState.PerformMove;
+        state = BattleState.RunningTurn;
 
-        var move = playerUnit.Pokemon.Moves[currentMove];
-        yield return RunMove(playerUnit, enemyUnit, move);
-       
-        // if state not changed by RunMove, go to next step
-        if (state == BattleState.PerformMove)
-            StartCoroutine(EnemyMove());
-        
+        if (playerAction == BattleAction.Move)
+        {
+            playerUnit.Pokemon.CurrentMove = playerUnit.Pokemon.Moves[currentMove];
+            enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
+
+            //check who goes first
+            bool playerGoesFirst = playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed;
+
+            var firstUnit = (playerGoesFirst) ? playerUnit : enemyUnit;
+            var secondUnit = (playerGoesFirst) ? enemyUnit : playerUnit;
+
+            var secondPokemon = secondUnit.Pokemon;
+
+            //first turn
+            yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
+            yield return RunAfterTurn(firstUnit);
+            if (state == BattleState.BattleOver) yield break;
+
+
+            if(secondPokemon.HP > 0)
+            { 
+                //second turn
+                yield return RunMove(secondUnit, firstUnit, secondUnit.Pokemon.CurrentMove);
+                yield return RunAfterTurn(secondUnit);
+                if (state == BattleState.BattleOver) yield break;
+            }
+           
+        }
+        else
+        {
+            if(playerAction == BattleAction.SwitchPokemon)
+            {
+                var selectedPokemon = playerParty.Pokemons[currentMember];
+                state = BattleState.Busy;
+                yield return SwitchPokemon(selectedPokemon);
+            }
+
+            //enemy turn
+            var enemyMove = enemyUnit.Pokemon.GetRandomMove();
+            yield return RunMove(enemyUnit, playerUnit, enemyMove);
+            yield return RunAfterTurn(enemyUnit);
+            if (state == BattleState.BattleOver) yield break;
+        }
+        if (state != BattleState.BattleOver)
+            ActionSelection();
     }
 
-    private IEnumerator EnemyMove()
-    {
-        state = BattleState.PerformMove;
-
-        var move = enemyUnit.Pokemon.GetRandomMove();
-        yield return RunMove(enemyUnit, playerUnit, move);
-
-        // if state not changed by RunMove, go to next step
-        if (state == BattleState.PerformMove)
-            ActionSelection();      
-    }
 
     private IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
     {
@@ -273,19 +299,7 @@ public class BattleSystem : MonoBehaviour
             yield return dialogBox.TypeDialog($"{sourceUnit.Pokemon.Base.Name}'s attack missed");
         }
 
-        // status like burn or psn will hurt the pokemon after turn
-        sourceUnit.Pokemon.OnAfterTurn();
-        yield return ShowStatusChanges(sourceUnit.Pokemon);
-        yield return sourceUnit.Hud.UpdateHP();
-        if (sourceUnit.Pokemon.HP <= 0)
-        {
-            yield return dialogBox.TypeDialog($"{sourceUnit.Pokemon.Base.Name} Fainted");
-            sourceUnit.PlayFaintAnimation();
-
-            yield return new WaitForSeconds(2f);
-
-            CheckForBattleOver(sourceUnit);
-        }
+        
     }
 
     private IEnumerator RunMoveEffects(MoveEffects effects, Pokemon source, Pokemon target, MoveTarget moveTarget)
@@ -315,6 +329,26 @@ public class BattleSystem : MonoBehaviour
 
         yield return ShowStatusChanges(source);
         yield return ShowStatusChanges(target);
+    }
+
+    IEnumerator RunAfterTurn(BattleUnit sourceUnit)
+    {
+        if (state == BattleState.BattleOver) yield break;
+        yield return new WaitUntil(() => state == BattleState.RunningTurn);
+
+        // status like burn or psn will hurt the pokemon after turn
+        sourceUnit.Pokemon.OnAfterTurn();
+        yield return ShowStatusChanges(sourceUnit.Pokemon);
+        yield return sourceUnit.Hud.UpdateHP();
+        if (sourceUnit.Pokemon.HP <= 0)
+        {
+            yield return dialogBox.TypeDialog($"{sourceUnit.Pokemon.Base.Name} Fainted");
+            sourceUnit.PlayFaintAnimation();
+
+            yield return new WaitForSeconds(2f);
+
+            CheckForBattleOver(sourceUnit);
+        }
     }
 
     void CheckForBattleOver(BattleUnit faintedUnit)
@@ -404,6 +438,7 @@ public class BattleSystem : MonoBehaviour
             else if (currentAction == 2)
             {
                 // todo pokemon
+                previousState = state;
                 OpenPartyScreen();
             }
             else if (currentAction == 3)

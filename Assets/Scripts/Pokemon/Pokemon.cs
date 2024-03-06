@@ -8,28 +8,23 @@ public class Pokemon
 {
     [SerializeField] PokemonBase _base;
     [SerializeField] int level;
+
     public PokemonBase Base { get { return _base; } }
     public int Level { get { return level; } }
-
-
     public int HP {  get; set; }
     public Dictionary<Stat, int> Stats { get; private set; }
     public Dictionary<Stat, int> StatBoosts { get; private set; }
     public Condition Status { get; private set; }
     public int StatusTime {  get; set; }
-
     public Condition VolatileStatus { get; private set; }
     public int VolatileStatusTime { get; set; }
-
-
     public Queue<string> StatusChanges { get; private set; } = new Queue<string>();
-
     public bool HpChanged { get; set; }
-
     public event System.Action OnStatusChanged;
-
-
     public List<Move> Moves {  get;  set; }
+    public Move CurrentMove { get; set; }
+
+
     public void Init()
     {
         
