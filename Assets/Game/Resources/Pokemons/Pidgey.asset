@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 880b911210a90074699c04909312d1cf, type: 3}
   m_Name: Pidgey
   m_EditorClassIdentifier: 
-  name: 
+  name: Pidgey
   description: 
   frontSprite: {fileID: 21300000, guid: 8c43bbc38ae6c10468b1d210510268e4, type: 3}
   backSprite: {fileID: 21300000, guid: 9b587645bd9d2a547babe83e84989bf4, type: 3}
